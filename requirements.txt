@@ -1,0 +1,8 @@
+pennylane
+torch
+pandas
+scikit-learn
+matplotlib
+opencv-python
+plotly
+pyyaml

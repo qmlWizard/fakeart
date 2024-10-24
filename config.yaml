@@ -1,0 +1,55 @@
+# Configuration for a Quantum Kernel Alignment
+
+# Dataset settings
+dataset:
+  name: texture
+  generate: False
+  preprocess: pca
+  image_size: 8
+
+# Model settings
+model:
+  type: qnn
+  layers: 12
+  embedding_type: amplitude
+  embedding_rotation: Z
+  ansatz: he
+  reuploading: True
+
+# Training settings
+training:
+  batch_size: 4
+  shuffle: True
+  optimizer: gd
+
+
+# Paths
+paths:
+  model_save_path: /trained_models/
+  results_path: /results/
+  figures: /figures/
+
+# Hyperparameters for the Quantum Kernel
+quantum_kernel:
+  trainable: True
+
+
+gd:
+  learning_rate: 0.2
+  max_iter: 250
+  tolerance: 0.00000001
+  criterion: cross_entropy
+
+spsa:
+  learning_rate: 0.01
+  max_iter: 200
+  perturbation: 0.01
+  criterion: cross_entropy
+
+adam:
+  learning_rate: 0.01
+  max_iter: 200
+  tolerance: 0.00000001
+  criterion: cross_entropy
+
+
