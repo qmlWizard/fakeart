@@ -2,16 +2,16 @@
 
 # Dataset settings
 dataset:
-  name: texture
+  name: fashion_mnist
   generate: False
   preprocess: pca
-  image_size: 8
+  image_size: 12
 
 # Model settings
 model:
   type: qnn
-  layers: 12
-  embedding_type: amplitude
+  layers: 1
+  embedding_type: angle
   embedding_rotation: Z
   ansatz: he
   reuploading: True

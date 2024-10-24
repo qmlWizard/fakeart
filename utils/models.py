@@ -96,7 +96,7 @@ class qnn(nn.Module):
     def forward(self, inputs):
         __output = self._qnn_circuit(self, inputs, self.weights)
         __pred = self._decode(__output)
-        return __pred
+        return __pred.view(-1, self._n_classes)
     
     def _get_summary(self):
         d = {

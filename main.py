@@ -38,7 +38,7 @@ if config['dataset']['generate']:
 data = np.load(f"data/{config['dataset']['name']}_{config['dataset']['image_size']}.npy", allow_pickle=True).item()
 feature = data['images']
 target = data['labels']
-feature_dimensions = math.ceil(math.log2(len(feature[0])))
+feature_dimensions =  len(feature[0]) #math.ceil(math.log2(len(feature[0])))
 n_classes = len(np.unique(target))
 
 # Convert features and labels to torch tensors
