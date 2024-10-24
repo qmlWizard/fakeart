@@ -6,3 +6,6 @@ matplotlib
 opencv-python
 plotly
 pyyaml
+torch
+torchvision
+torchaudio
