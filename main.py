@@ -57,18 +57,14 @@ train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 batch_size = config['training']['batch_size']  # Assuming batch size is defined in your config
 shuffle = config['training']['shuffle']  # Shuffle the data at every epoch
 
+print(train_dataset.shape)
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
-
-# Define DataLoader for testing data (no shuffling)
 test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-
-# Now, `train_dataloader` contains 75% of the data and `test_dataloader` contains 25%
 print(f"Training Data Size: {train_size}, Testing Data Size: {test_size}")
-# Test: Print some information about the DataLoader
 print(f"Number of batches: {len(train_dataloader)}")
+
 for i, (inputs, labels) in enumerate(train_dataloader):
     print(f"Batch {i+1} - Input shape: {inputs.shape}, Labels shape: {labels.shape}")
-    # Just printing the first batch for checking
     if i == 0:
         break
 

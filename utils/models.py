@@ -138,7 +138,7 @@ class qnn(nn.Module):
                 optimizer.zero_grad()
 
                 # Forward pass
-                outputs = self(inputs)
+                outputs = self.forward(inputs)
                 loss = criterion(outputs, labels)
 
                 # Backward pass and optimization
