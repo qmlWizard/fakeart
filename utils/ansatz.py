@@ -10,10 +10,15 @@ def _he_layer(x, _scaling_params, _variational_params, _wires, _embedding, _data
         qml.RY(_variational_params[i], wires = [wire])
     for i, wire in enumerate(_wires):
         qml.RZ(_variational_params[i+len(_wires)], wires = [wire])
+    # Assuming _wires is a list of qubit wires
     if len(_wires) == 2:
-        qml.broadcast(unitary=qml.CZ, pattern = "chain", wires = _wires)
+        # Chain pattern for 2 wires
+        for i in range(len(_wires) - 1):
+            qml.CZ(wires=[_wires[i], _wires[i + 1]])
     else:
-        qml.broadcast(unitary=qml.CZ, pattern = "ring", wires = _wires)
+        # Ring pattern for more than 2 wires
+        for i in range(len(_wires)):
+            qml.CZ(wires=[_wires[i], _wires[(i + 1) % len(_wires)]])
 
 def _covariant_layer(x, _scaling_params, _variational_params, _wires, _embedding, _data_reuploading, entanglement = None):
     if entanglement == None:

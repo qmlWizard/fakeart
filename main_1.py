@@ -17,6 +17,8 @@ import json
 from utils.data_generator import DataGenerator
 from utils.train_qkernel import TrainQkernel
 from utils.qkernel import Qkernel
+from utils.qnn import QNN
+from utils.train_qnn import TrainQNN
 from utils.helper import to_python_native
 
 
@@ -46,14 +48,8 @@ if __name__ == "__main__":
     config = namedtuple("ObjectName", data.keys())(*data.values())
 
     data_generator = DataGenerator(
-        dataset_name=config['name'],
-        file_path=config['file'],
-        n_samples=config['n_samples'],
-        noise=config['noise'],
-        num_sectors=config['num_sectors'],
-        points_per_sector=config['points_per_sector'],
-        grid_size=config['grid_size'],
-        sampling_radius=config['sampling_radius']
+        dataset_name=config.dataset['name'],
+        file_path=config.dataset['file']
     )
 
     features, target = data_generator.generate_dataset()
@@ -63,15 +59,15 @@ if __name__ == "__main__":
     training_labels = torch.tensor(training_labels.to_numpy(), dtype=torch.int)
     testing_labels = torch.tensor(testing_labels.to_numpy(), dtype=torch.int)
 
-    if config['training']['model'] == 'qkernel':
+    if config.training['model'] == 'qkernel':
         kernel = Qkernel(
-                            device=config['device'],
-                            n_qubits=config['n_qubits'],
-                            trainable=config['trainable'],
-                            input_scaling=config['input_scaling'],
-                            data_reuploading=config['data_reuploading'],
-                            ansatz=config['ansatz'],
-                            ansatz_layers=config['ansatz_layers']
+                            device=config.qkernel['device'],
+                            n_qubits=config.qkernel['n_qubits'],
+                            trainable=config.qkernel['trainable'],
+                            input_scaling=config.qkernel['input_scaling'],
+                            data_reuploading=config.qkernel['data_reuploading'],
+                            ansatz=config.qkernel['ansatz'],
+                            ansatz_layers=config.qkernel['ansatz_layers']
                         )
         agent = TrainQkernel(
                                 kernel=kernel,
@@ -79,15 +75,15 @@ if __name__ == "__main__":
                                 training_labels=training_labels,
                                 testing_data=testing_data,
                                 testing_labels=testing_labels,
-                                optimizer=config['optimizer'],
-                                lr=config['lr'],
-                                epochs=config['epochs'],
-                                train_method=config['train_method'],
-                                target_accuracy=config['target_accuracy'],
-                                get_alignment_every=config['get_alignment_every'],
-                                validate_every_epoch=config['validate_every_epoch'],
-                                base_path=config['base_path'],
-                                clusters=config['clusters']
+                                optimizer=config.agent['optimizer'],
+                                lr=config.agent['lr'],
+                                epochs=config.agent['epochs'],
+                                train_method=config.agent['train_method'],
+                                target_accuracy=config.agent['target_accuracy'],
+                                get_alignment_every=config.agent['get_alignment_every'],
+                                validate_every_epoch=config.agent['validate_every_epoch'],
+                                base_path=config.agent['base_path'],
+                                clusters=config.agent['clusters']
                             )
         
         before_metrics = agent.evaluate(testing_data, testing_labels)
@@ -96,7 +92,7 @@ if __name__ == "__main__":
         print('Training Complete')
         after_metrics = agent.evaluate(testing_data, testing_labels)
         metrics = {
-            "num_layers": config['ansatz_layers'],
+            "num_layers": config.qkernel['ansatz_layers'],
             "accuracy_train_init": before_metrics['training_accuracy'],
             "accuracy_test_init": before_metrics['testing_accuracy'],
             "alignment_train_init": before_metrics['alignment'],
@@ -108,8 +104,34 @@ if __name__ == "__main__":
         metrics = to_python_native(metrics)
 
         # Specify the filename
-        filename = f"results/qkernel_{config['name']}.json"
+        filename = f"results/qkernel_{config.dataset['name']}_{config.agent['clusters']}.json"
 
         # Write the JSON-serializable results to a file
         with open(filename, "w") as file:
             json.dump(metrics, file, indent=4)
+
+    elif(config.training['model'] == 'qnn'):
+        qnn = QNN(
+                    device=config.qkernel['device'],
+                    n_qubits=config.qkernel['n_qubits'],
+                    trainable=config.qkernel['trainable'],
+                    input_scaling=config.qkernel['input_scaling'],
+                    data_reuploading=config.qkernel['data_reuploading'],
+                    ansatz=config.qkernel['ansatz'],
+                    ansatz_layers=config.qkernel['ansatz_layers']
+                 )
+        
+        agent = TrainQNN(
+                                qnn=qnn,
+                                training_data=training_data,
+                                training_labels=training_labels,
+                                testing_data=testing_data,
+                                testing_labels=testing_labels,
+                                optimizer=config.agent['optimizer'],
+                                lr=config.agent['lr'],
+                                epochs=config.agent['epochs'],
+                                train_method=config.agent['train_method'],
+                                target_accuracy=config.agent['target_accuracy'],
+                                base_path=config.agent['base_path'],
+                            )
+        agent.fit(training_data, training_labels)

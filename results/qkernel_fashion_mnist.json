@@ -1,0 +1,16 @@
+{
+    "num_layers": 5,
+    "accuracy_train_init": 1.0,
+    "accuracy_test_init": 0.4666666666666667,
+    "alignment_train_init": 0.3447309136390686,
+    "accuracy_train_final": 1.0,
+    "accuracy_test_final": 0.7333333333333333,
+    "alignment_train_epochs": [
+        0.36065736413002014,
+        0.3782005310058594,
+        0.3928832709789276,
+        0.409164160490036,
+        0.42259788513183594
+    ],
+    "circuit_executions": 2000
+}

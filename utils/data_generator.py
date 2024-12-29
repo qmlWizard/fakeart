@@ -17,8 +17,8 @@ class DataGenerator:
     def generate_dataset(self):
         """Load a dataset from a file and return a merged pandas DataFrame and Series."""
         data = np.load(self.file_path, allow_pickle=True).item()
-        feature = data['images']
-        target = data['labels']
+        feature = data['images'][:500]
+        target = data['labels'][:500]
 
         # Apply Min-Max Scaling to the range [0, π]
         scaler = MinMaxScaler(feature_range=(-np.pi, np.pi))

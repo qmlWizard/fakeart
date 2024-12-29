@@ -12,7 +12,7 @@ import os
 torch.manual_seed(42)
 np.random.seed(42)
 
-class Qkernel(nn.Module):
+class QNN(nn.Module):
     
     def __init__(self, device, n_qubits, trainable, input_scaling, data_reuploading, ansatz, ansatz_layers):
         super().__init__()
@@ -28,13 +28,14 @@ class Qkernel(nn.Module):
         self._projector = torch.zeros((2**self._n_qubits,2**self._n_qubits))
         self._projector[0,0] = 1
         self._circuit_executions = 0
+        self._n_classes = 2
 
         if self._ansatz == 'he':
             if self._input_scaling:
                 self.register_parameter(name="input_scaling", param= nn.Parameter(torch.ones(self._layers, self._n_qubits), requires_grad=True))
             else:
                 self.register_parameter(name="input_scaling", param= nn.Parameter(torch.ones(self._layers, self._n_qubits), requires_grad=False))
-            self.register_parameter(name="variational", param= nn.Parameter((torch.rand(self._layers, self._n_qubits) * 2 * math.pi) - math.pi, requires_grad=True))
+            self.register_parameter(name="variational", param= nn.Parameter((torch.rand(self._layers, self._n_qubits * 2) * 2 * math.pi) - math.pi, requires_grad=True))
 
         elif self._ansatz == 'embedding_paper':
             if self._input_scaling:
@@ -46,9 +47,9 @@ class Qkernel(nn.Module):
 
         dev = qml.device(self._device, wires = range(self._n_qubits))
         if self._ansatz == 'he':
-            self._qnn = qml.QNode(qnnhe, dev, diff_method='adjoint', interface='torch')
+            self._qnn = qml.QNode(qnnhe, dev, interface='torch')
         elif self._ansatz == 'embedding_paper':
-            self._qnn = qml.QNode(qnnembedding_paper, dev, diff_method='adjoint', interface='torch')
+            self._qnn = qml.QNode(qnnembedding_paper, dev, interface='torch')
         elif self._ansatz == 'covariant':
             self._qnn = qml.QNode(qnnhe, dev, diff_method='adjoint', interface='torch')
         else:
@@ -56,7 +57,7 @@ class Qkernel(nn.Module):
             print("No Kernel Ansatz selected!")
 
     def _decode(self, output):
-        __num_probabilities = 2 ** self.n_qubits
+        __num_probabilities = 2 ** self._n_qubits
         if __num_probabilities >= self._n_classes:
             __output = output[:self._n_classes]
         else:
