@@ -3,7 +3,7 @@ from pennylane import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from utils.ansatz import efficientSU2
+from utils.ansatz import qkhe
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report
 import json
 import os

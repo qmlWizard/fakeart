@@ -66,5 +66,6 @@ class QNN(nn.Module):
         
     def forward(self, x1):
         __output = self._qnn(x1, self._parameters, self._wires, self._layers, self._projector, self._data_reuploading)
-        __pred = self._decode(__output)
-        return __pred
+        print(__output)
+        #__pred = self._decode(__output)
+        return __output

@@ -55,13 +55,15 @@ class TrainQNN():
 
 
     def fit(self, training_data, training_labels):
+        training_labels = training_labels.float()
         for epoch in range(self._epochs):
-            x_0 = training_data
-            self._qnn_optimizer.zero_grad()   
-            _output = self._qnn(x_0)
-            loss = self._loss_function(_output, training_labels)
-            loss.backward()
-            self._qnn_optimizer.step()
-            self._loss_arr.append(loss.item())
-
-            print(f"Epoch {epoch}th: Loss: {self._loss_arr[-1]}")
+            for data, label in zip(training_data, training_labels):
+                self._qnn_optimizer.zero_grad()   
+                _output = self._qnn(data)
+                print(f"Output shape: {_output.shape}")
+                print(f"Label shape: {label.shape}")
+                loss = self._loss_function(_output, label)
+                loss.backward()
+                self._qnn_optimizer.step()
+                self._loss_arr.append(loss.item())
+                print(f"Epoch {epoch}th: Loss: {self._loss_arr[-1]}")

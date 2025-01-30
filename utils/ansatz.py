@@ -10,13 +10,10 @@ def _he_layer(x, _scaling_params, _variational_params, _wires, _embedding, _data
         qml.RY(_variational_params[i], wires = [wire])
     for i, wire in enumerate(_wires):
         qml.RZ(_variational_params[i+len(_wires)], wires = [wire])
-    # Assuming _wires is a list of qubit wires
     if len(_wires) == 2:
-        # Chain pattern for 2 wires
         for i in range(len(_wires) - 1):
             qml.CZ(wires=[_wires[i], _wires[i + 1]])
     else:
-        # Ring pattern for more than 2 wires
         for i in range(len(_wires)):
             qml.CZ(wires=[_wires[i], _wires[(i + 1) % len(_wires)]])
 
@@ -82,18 +79,72 @@ def qkembedding_paper(x1 , x2, weights, wires, layers, projector, data_reuploadi
     qml.adjoint(_embedding_paper)(x2,weights,wires,layers,data_reuploading)
     return qml.expval(qml.Hermitian(projector, wires = wires))
 
+def _he_nnlayer(x, _scaling_params, _variational_params, _wires, _embedding, _data_reuploading, entanglement = None):
+    if _embedding or _data_reuploading:
+        for i, wire in enumerate(_wires):
+            qml.RX(_scaling_params[i] * x[i], wires = [wire])
+    for i, wire in enumerate(_wires):
+        qml.RY(_variational_params[i], wires = [wire])
+    for i, wire in enumerate(_wires):
+        qml.RZ(_variational_params[i+len(_wires)], wires = [wire])
+    if len(_wires) == 2:
+        for i in range(len(_wires) - 1):
+            qml.CZ(wires=[_wires[i], _wires[i + 1]])
+    else:
+        for i in range(len(_wires)):
+            qml.CZ(wires=[_wires[i], _wires[(i + 1) % len(_wires)]])
+
+def _covariant_nnlayer(x, _scaling_params, _variational_params, _wires, _embedding, _data_reuploading, entanglement = None):
+    if entanglement == None:
+        entanglement = [[i, i + 1] for i in range(len(_wires) - 1)]
+    for i, wire in enumerate(_wires):
+        qml.RY(_variational_params[i+len(_wires)], wires = [wire])
+    for source, target in entanglement:
+        qml.CZ(wires=[source, target])
+    if _embedding or _data_reuploading:
+        for i, wire in enumerate(_wires):
+            qml.RZ(_scaling_params[i] * x[2 * i + 1], wires = [wire])
+            qml.RX(_scaling_params[i] * x[2 * i], wires = [wire])
+
+def _embedding_paper_nnlayer(x, _scaling_params, _variational_params, _rotational_params, _wires, _embedding, _data_reuploading, entanglement = None):
+    for i,wire in enumerate(_wires):
+        qml.Hadamard(wires = wire)
+    if _embedding or _data_reuploading:
+        for i, wire in enumerate(_wires):
+            qml.RZ(_scaling_params[i] * x[i], wires = [wire])
+    for i, wire in enumerate(_wires):
+        qml.RY(_variational_params[i], wires = [wire])
+    qml.broadcast(unitary = qml.CRZ, pattern = "ring", wires = _wires, parameters=_rotational_params)
+
+def _nnhe(x, weights, wires, layers, use_data_reuploading, entanglement = None):
+    first_layer = True
+    for layer in range(layers):
+        _he_nnlayer(x, weights["input_scaling"][layer], weights["variational"][layer], wires, first_layer, use_data_reuploading)
+        first_layer = False
+
+def _nncovariant(x, weights, wires, layers, use_data_reuploading, entanglement = None):
+    first_layer = True
+    for layer in range(layers):
+        _covariant_nnlayer(x, weights["input_scaling"][layer], weights["variational"][layer], wires, first_layer, use_data_reuploading, entanglement)
+        first_layer = False
+
+def _nnembedding_paper(x, weights, wires, layers, use_data_reuploading, entanglement = None):
+    first_layer = True
+    for layer in range(layers):
+        _embedding_paper_nnlayer(x, weights["input_scaling"][layer], weights["variational"][layer], weights["rotational"][layer], wires, first_layer, use_data_reuploading)
+        first_layer = False
+
+
 def qnnhe(x1 , weights, wires, layers, projector, data_reuploading, entanglement = None):
-    x1 = x1.repeat(1, len(wires) // len(x1[0]) + 1)[:, :len(wires)]
-    _he(x1,weights,wires,layers,data_reuploading)
-    return qml.probs(wires = wires)
+    _nnhe(x1,weights,wires,layers,data_reuploading)
+    return qml.expval(qml.PauliZ(0))
 
 
 def qnncovariant(x1, weights, wires, layers, projector, data_reuploading, entanglement = None):
-    x1 = x1.repeat(1, len(wires) // len(x1[0]) + 1)[:, :len(wires)]
-    _covariant(x1,weights,wires,layers,data_reuploading)
-    return qml.probs(wires = wires)
+    _nncovariant(x1,weights,wires,layers,data_reuploading)
+    return qml.expval(qml.PauliZ(0))
 
 def qnnembedding_paper(x1 , weights, wires, layers, projector, data_reuploading, entanglement = None):
-    x1 = x1.repeat(1, len(wires) // len(x1[0]) + 1)[:, :len(wires)]
-    _embedding_paper(x1,weights,wires,layers,data_reuploading)
-    return qml.probs(wires = wires)
+    _nnembedding_paper(x1,weights,wires,layers,data_reuploading)
+    return qml.expval(qml.PauliZ(0))
+

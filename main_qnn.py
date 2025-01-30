@@ -10,8 +10,6 @@ import time
 import os 
 
 #Custom Libraries
-
-from utils.models import qnn, hybrid, classical, qkernel
 from utils.preprocessing import read_data
 
 ##Backend Configuration
